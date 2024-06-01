@@ -1,9 +1,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <unistd.h>
-#include <assert.h>
 #include <stdbool.h>
-#include <stdlib.h>
 
 typedef struct Block {
   size_t size;
@@ -21,23 +19,15 @@ void my_free(void *ptr);
 
 Block* free_list = NULL;
 
-void print_block_info() {
-  Block *block = free_list;
-  while (block) {
-    printf("size: %zu, free: %s, next: %p, prev: %p\n", block->size, block->free ? "true" : "false", block->next, block->prev);
-    block = block->next;
-  }
-  printf("\n");
-}
-
 int main() {
   int* arr = (int*) my_malloc(10 * sizeof(int));
-  int* arr1 = (int*) my_malloc(5 * sizeof(int));
-  int* arr2 = (int*) my_malloc(8 * sizeof(int));
-  if (arr == NULL || arr1 == NULL || arr2 == NULL) {
+  if (arr == NULL) {
     fprintf(stderr, "my_malloc failed\n");
     return 1;
   }
+
+  Block *block = free_list;
+  printf("block : %p, size : %i, free : %s, next : %p, prev : %p\n", block, (int)block->size, block->free ? "true" : "false", block->next, block->prev);
 
   for (int i = 0; i < 10; i++) {
     arr[i] = i;
@@ -45,20 +35,7 @@ int main() {
   }
   printf("\n");
 
-
-  Block *block = free_list;
-  Block *block2 = free_list;
-  do
-  {
-    printf("size : %i, free : %s, next : %p, prev : %p\n", (int)block->size, block->free ? "true" : "false", block->next, block->prev);
-
-    block = block2;
-    block2 = block2->next;
-  } while (block2);
-
   my_free(arr);
-  my_free(arr1);
-  my_free(arr2);
   return 0;
 }
 
