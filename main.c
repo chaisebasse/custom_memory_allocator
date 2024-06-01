@@ -3,20 +3,24 @@
 #include <unistd.h>
 #include <stdbool.h>
 
+// memory block structure : size of the block, availability, pointer to
+// the previous and next block
 typedef struct Block {
   size_t size;
-  int free;
+  bool free;
   struct Block *next;
   struct Block * prev;
 } Block;
 
-void *my_malloc(size_t size);
-
 Block *find_free_block(Block **last, size_t size);
 Block *request_space(Block *last, size_t size);
+void *my_malloc(size_t size);
 void my_free(void *ptr);
+
+// size of a heap block
 #define BLOCK_SIZE sizeof(Block)
 
+// first available block
 Block* free_list = NULL;
 
 int main() {
@@ -41,6 +45,7 @@ int main() {
 
 Block *find_free_block(Block **last, size_t size) {
   Block *current = free_list;
+  // stops when an available block (current) is found
   while (current && !(current->free && current->size >= size)) {
     *last = current;
     current = current->next;
@@ -53,12 +58,14 @@ Block *request_space(Block *last, size_t size) {
   Block *block;
   block = sbrk(0);
 
+  // request memory to the system
   void *request = sbrk(size + BLOCK_SIZE);
   if (request ==  (void *)-1) {
     perror("sbrk fail (request_space)");
     return NULL;
   }
 
+  // initialize new block
   block->size = size;
   block->next = NULL;
   block->free = false;
@@ -80,6 +87,7 @@ void *my_malloc(size_t size) {
   Block *block;
 
   if (free_list == NULL) {
+    // check if no blocks exist, request from heap
     block = request_space(NULL, size);
     if (!block) {
       return NULL;
@@ -110,6 +118,7 @@ void my_free(void *ptr) {
     return;
   }
 
+  // set block to free
   Block *block = (Block *)ptr - 1;
   Block *pre_block = (Block *)ptr - 1;
   block->free = true;
