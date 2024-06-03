@@ -60,7 +60,7 @@ Block *request_space(Block *last, size_t size) {
 
   // request memory to the system
   void *request = sbrk(size + BLOCK_SIZE);
-  if (request ==  (void *)-1) {
+  if (request == (void *)-1) {
     perror("sbrk fail (request_space)");
     return NULL;
   }
